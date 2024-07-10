@@ -99,3 +99,4 @@
 "OPERATION";"Codes opérations restitués dans les relevés de compte.";;"Opérations CFONB";"B4";"Prélèvements SEPA interentreprises rejetés/impayés reçus (par le créancier - « R-transaction »)";;;;;;;;98
 "OPERATION";"Codes opérations restitués dans les relevés de compte.";;"Opérations CFONB";"B5";"Prélèvements SEPA – reversements reçus (par le débiteur - « R-transaction »)";;;;;;;;99
 "OPERATION";"Codes opérations restitués dans les relevés de compte.";;"Opérations CFONB";"B6";"Prélèvements SEPA interentreprises – reversements reçus (par le débiteur - « R-transaction »)";;;;;;;;100
+"

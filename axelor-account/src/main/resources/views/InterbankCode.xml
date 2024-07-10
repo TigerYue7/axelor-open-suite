@@ -8,6 +8,7 @@
     <field name="code" x-bind="{{code|unaccent|uppercase}}"/>
     <field name="name"/>
     <field name="description"/>
+    <field name="bankStatementFileFormat"/>
   </grid>
 
   <grid name="interbank-code-line-custom-grid" title="Interbank codes lists"
@@ -16,6 +17,7 @@
     <field name="name"/>
     <field name="description"/>
     <field name="technicalRejectOk"/>
+    <field name="bankStatementFileFormat"/>
   </grid>
 
   <form name="interbank-code-form" title="Interbank codes lists"
@@ -25,6 +27,7 @@
       <field name="code" x-bind="{{code|unaccent|uppercase}}"/>
       <field name="name"/>
       <field name="endDate"/>
+      <field name="bankStatementFileFormat"/>
     </panel>
     <panel name="descriptionPanel" title="Description">
       <field name="description" showTitle="false" colSpan="12"/>

@@ -126,6 +126,22 @@
     </bind>
   </input>
 
+  <input file="account_interBankCodeOperationCAMT53.csv" separator=";"
+    type="com.axelor.apps.account.db.InterbankCodeLine">
+    <bind column="name" to="name"/>
+    <bind column="code" to="code"/>
+    <bind column="level2Code" to="level2Code"/>
+    <bind column="level3Code" to="level3Code"/>
+    <bind to="interbankCode" search="self.code = :code_fichier">
+      <bind column="code_fichier" to="code"/>
+      <bind column="nom_fichier" to="name"/>
+      <bind column="date_fin" to="endDate" eval="date_fin ? date_fin : null"/>
+      <bind column="description_operation" to="description"/>
+      <bind to="typeSelect" eval="1"/>
+      <bind column="bank_statement_file_format" to="bankStatementFileFormat"/>
+    </bind>
+  </input>
+
   <input file="base_template.csv" separator=";" type="com.axelor.message.db.Template"/>
 
   <input file="account_debtRecoveryMethod.csv" separator=";"

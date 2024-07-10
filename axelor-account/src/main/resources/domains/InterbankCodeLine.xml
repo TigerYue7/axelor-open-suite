@@ -8,6 +8,8 @@
   <entity name="InterbankCodeLine" cacheable="true">
 
     <string name="code" title="Code" required="true"/>
+    <string name="level2Code" title="Level 2 code"/>
+    <string name="level3Code" title="Level 3 code"/>
     <string name="name" title="Standard label" required="true"/>
     <string name="description" multiline="true" title="Usage rule" large="true"/>
     <boolean name="transferCfonbOk" title="Wire Transfer"/>

@@ -19,6 +19,7 @@ import com.axelor.apps.bankpayment.xsd.bankstatement.camt_053_001_02.BalanceType
 import com.axelor.apps.bankpayment.xsd.bankstatement.camt_053_001_02.BankToCustomerStatementV02;
 import com.axelor.apps.bankpayment.xsd.bankstatement.camt_053_001_02.BankTransactionCodeStructure4;
 import com.axelor.apps.bankpayment.xsd.bankstatement.camt_053_001_02.BankTransactionCodeStructure5;
+import com.axelor.apps.bankpayment.xsd.bankstatement.camt_053_001_02.BankTransactionCodeStructure6;
 import com.axelor.apps.bankpayment.xsd.bankstatement.camt_053_001_02.BatchInformation2;
 import com.axelor.apps.bankpayment.xsd.bankstatement.camt_053_001_02.CashAccount20;
 import com.axelor.apps.bankpayment.xsd.bankstatement.camt_053_001_02.CashBalance3;
@@ -145,9 +146,6 @@ public class BankStatementLineCreateCAMT53Service extends BankStatementLineCreat
         createBankStatement(curBankStatement);
       }
       return bankStatement;
-
-      /* TODO: warn users when the currency symbol is different from the company's setting.
-       */
 
     } catch (jakarta.xml.bind.JAXBException e) {
       throw new AxelorException(
@@ -296,21 +294,9 @@ public class BankStatementLineCreateCAMT53Service extends BankStatementLineCreat
     }
 
     String origin = getOrigin(ntry);
-
     String reference = getReference(ntry);
-
-    String interBankCodeLineCode = getInterBankCodeLineCode(ntry);
-    InterbankCodeLine interbankCodeLine = findInterBankCodeLineByCode(interBankCodeLineCode);
-    InterbankCodeLine operationInterbankCodeLine = null;
+    InterbankCodeLine operationInterbankCodeLine = getInterBankCodeLineCode(ntry);
     InterbankCodeLine rejectInterbankCodeLine = null;
-    if (interbankCodeLine != null) {
-      if (interbankCodeLine.getInterbankCode().getTypeSelect()
-          == BankStatementLineCAMT53Repository.TYPE_OPERATION_CODE) {
-        operationInterbankCodeLine = interbankCodeLine;
-      } else {
-        rejectInterbankCodeLine = interbankCodeLine;
-      }
-    }
 
     if (bankDetails != null) {
       bankDetails = bankDetailsRepository.find(bankDetails.getId());
@@ -445,19 +431,29 @@ public class BankStatementLineCreateCAMT53Service extends BankStatementLineCreat
         .orElse(null);
   }
 
-  protected String getInterBankCodeLineCode(ReportEntry2 ntry) {
-    String interBankCodeLineCode = null;
+  protected InterbankCodeLine getInterBankCodeLineCode(ReportEntry2 ntry) {
+    String domnCd = null;
+    String fmlyCd = null;
+    String subFmlyCd = null;
     BankTransactionCodeStructure4 bkTxCd = ntry.getBkTxCd();
     BankTransactionCodeStructure5 domn = bkTxCd.getDomn();
     if (domn != null) {
-      interBankCodeLineCode = domn.getCd();
-    } else {
-      ProprietaryBankTransactionCodeStructure1 prtry = bkTxCd.getPrtry();
-      if (prtry != null) {
-        interBankCodeLineCode = prtry.getCd();
+      domnCd = domn.getCd();
+      BankTransactionCodeStructure6 fmly = domn.getFmly();
+      if (fmly != null) {
+        fmlyCd = fmly.getCd();
+        subFmlyCd = fmly.getSubFmlyCd();
       }
     }
-    return interBankCodeLineCode;
+    if (domnCd != null
+        && !domnCd.isEmpty()
+        && fmlyCd != null
+        && !fmlyCd.isEmpty()
+        && subFmlyCd != null
+        && !subFmlyCd.isEmpty()) {
+      return findInterBankCodeLineByCode(domnCd, fmlyCd, subFmlyCd);
+    }
+    return null;
   }
 
   @Transactional
@@ -599,17 +595,15 @@ public class BankStatementLineCreateCAMT53Service extends BankStatementLineCreat
     return operationDate;
   }
 
-  /**
-   * Find the interbankCodeLineCodeLine by the input code.
-   *
-   * @param interbankCodeLineCode
-   * @return InterbankCodeLine obj
-   */
-  protected InterbankCodeLine findInterBankCodeLineByCode(String interbankCodeLineCode) {
+  protected InterbankCodeLine findInterBankCodeLineByCode(
+      String code, String level2Code, String level3Code) {
     return interbankCodeLineRepository
         .all()
-        .filter("self.code = :code")
-        .bind("code", interbankCodeLineCode)
+        .filter(
+            "self.code = :code AND self.level2Code = :level2Code AND self.level3Code = :level3Code AND self.interbankCode.bankStatementFileFormat = 'camt.053.001.02.stm'")
+        .bind("code", code)
+        .bind("level2Code", level2Code)
+        .bind("level3Code", level3Code)
         .fetchOne();
   }
 
@@ -767,17 +761,6 @@ public class BankStatementLineCreateCAMT53Service extends BankStatementLineCreat
         descriptionSb.append(";");
       }
 
-      /*
-      TODO: To be discussed:
-            The "cdtrId" is still an object, but it doesn't have a toString method.
-            It has the following sub-structure:
-              <Id> ---
-                  <OrgId>
-                      ...
-                  <PrvtId>
-                      ...
-            Check Payments_Maintenance_2009.pdf page 1008.
-       */
       // <TxDtls> -> <RltdPties> -> <Cdtr> -> <Id>
       String cdtrIdString = null;
       Party6Choice cdtrId =
@@ -808,9 +791,6 @@ public class BankStatementLineCreateCAMT53Service extends BankStatementLineCreat
         descriptionSb.append(";");
       }
 
-      /*
-      TODO: It has the same issue as the "cdtrId".
-       */
       // <TxDtls> -> <RltdPties> -> <UltmtCdtr> -> <Id>
       Party6Choice ultmtCdtrId =
           Optional.of(txDtl)
@@ -841,9 +821,6 @@ public class BankStatementLineCreateCAMT53Service extends BankStatementLineCreat
         descriptionSb.append(";");
       }
 
-      /*
-      TODO: It has the same issue as the "cdtrId".
-       */
       // <TxDtls> -> <RltdPties> -> <Dbtr> -> <Id>
       Party6Choice dbtrId =
           Optional.of(txDtl)

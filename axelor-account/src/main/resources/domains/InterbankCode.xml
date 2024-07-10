@@ -14,6 +14,8 @@
     <integer name="typeSelect" title="Type" selection="account.interbankcode.type.select"/>
     <one-to-many name="interbankCodeLineList" ref="InterbankCodeLine"
       mappedBy="interbankCode" title="Rejects/Return Reason Code List"/>
+    <string name="bankStatementFileFormat" title="File Format"
+      selection="account.bank.statement.file.format.statement.file.format.select"/>
 
     <extra-code><![CDATA[
 
